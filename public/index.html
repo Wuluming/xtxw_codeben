@@ -1,3 +1,29 @@
+
+    <form id="imageUploadForm" class="upload-form">
+        <h2>Upload Image to Wechat</h2>
+        <input type="file" id="wechatImage" accept="image/*" required>
+        <button type="submit">Upload Image</button>
+        <p id="imageMessage" class="message"></p>
+        <div id="imagePreview"></div>
+    </form>
+
+    <h2>Publish Article to Wechat</h2>
+    <form id="publishArticleForm" class="article-form">
+        <label for="articleTitle">Title:</label>
+        <input type="text" id="articleTitle" required>
+        <label for="articleAuthor">Author:</label>
+        <input type="text" id="articleAuthor" required>
+        <label for="articleContent">Content (Markdown):</label>
+        <textarea id="articleContent" rows="10" required></textarea>
+        <label for="articleThumbMediaId">Thumbnail Media ID:</label>
+        <input type="text" id="articleThumbMediaId" required>
+        <label for="articleDigest">Digest:</label>
+        <textarea id="articleDigest" rows="3"></textarea>
+        <label for="articleShowCoverPic">Show Cover Pic:</label>
+        <input type="checkbox" id="articleShowCoverPic">
+        <button type="submit">Publish Article</button>
+        <p id="publishMessage" class="message"></p>
+    </form>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +34,241 @@
 </head>
 <body>
     <div id="app"></div>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js">// Wechat Image Upload
+document.getElementById('imageUploadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const imageInput = document.getElementById('wechatImage');
+    const formData = new FormData();
+    formData.append('image', imageInput.files[0]);
+
+    const imageMessage = document.getElementById('imageMessage');
+    const imagePreview = document.getElementById('imagePreview');
+    imageMessage.textContent = 'Uploading image...';
+
+    try {
+        const response = await fetch('/wechat/upload_image', {
+            method: 'POST',
+            body: formData,
+        });
+        const data = await response.json();
+        if (response.ok) {
+            imageMessage.textContent = `Image uploaded successfully! URL: ${data.imageUrl}`;
+            imagePreview.innerHTML = `<img src="${data.imageUrl}" width="200">`;
+        } else {
+            imageMessage.textContent = `Error: ${data.error}`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        imageMessage.textContent = 'An error occurred during image upload.';
+    }
+});
+
+// Wechat Article Publish
+document.getElementById('publishArticleForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const articleTitle = document.getElementById('articleTitle').value;
+    const articleAuthor = document.getElementById('articleAuthor').value;
+    const articleContent = document.getElementById('articleContent').value;
+    const articleThumbMediaId = document.getElementById('articleThumbMediaId').value;
+    const articleDigest = document.getElementById('articleDigest').value;
+    const articleShowCoverPic = document.getElementById('articleShowCoverPic').checked ? 1 : 0;
+
+    const publishMessage = document.getElementById('publishMessage');
+    publishMessage.textContent = 'Publishing article...';
+
+    try {
+        // First, convert markdown content to HTML (using the existing /convert endpoint)
+        const convertResponse = await fetch('/convert', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content: articleContent }),
+        });
+        const convertData = await convertResponse.json();
+
+        if (!convertResponse.ok) {
+            publishMessage.textContent = `Error converting markdown: ${convertData.error}`;
+            return;
+        }
+
+        const htmlContent = convertData.markdown;
+
+        const articles = [{
+            title: articleTitle,
+            author: articleAuthor,
+            content: htmlContent,
+            thumb_media_id: articleThumbMediaId,
+            digest: articleDigest,
+            show_cover_pic: articleShowCoverPic,
+            content_source_url: '' // Optional: URL to original article
+        }];
+
+        const response = await fetch('/wechat/publish_article', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ articles }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            publishMessage.textContent = `Article published successfully! Media ID: ${data.mediaId}`;
+        } else {
+            publishMessage.textContent = `Error: ${data.error}`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        publishMessage.textContent = 'An error occurred during article publishing.';
+    }
+});
+
+        // Wechat Image Upload
+document.getElementById('imageUploadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const imageInput = document.getElementById('wechatImage');
+    const formData = new FormData();
+    formData.append('image', imageInput.files[0]);
+
+    const imageMessage = document.getElementById('imageMessage');
+    const imagePreview = document.getElementById('imagePreview');
+    imageMessage.textContent = 'Uploading image...';
+
+    try {
+        const response = await fetch('/wechat/upload_image', {
+            method: 'POST',
+            body: formData,
+        });
+        const data = await response.json();
+        if (response.ok) {
+            imageMessage.textContent = `Image uploaded successfully! URL: ${data.imageUrl}`;
+            imagePreview.innerHTML = `<img src="${data.imageUrl}" width="200">`;
+        } else {
+            imageMessage.textContent = `Error: ${data.error}`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        imageMessage.textContent = 'An error occurred during image upload.';
+    }
+});
+
+// Wechat Article Publish
+document.getElementById('publishArticleForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const articleTitle = document.getElementById('articleTitle').value;
+    const articleAuthor = document.getElementById('articleAuthor').value;
+    const articleContent = document.getElementById('articleContent').value;
+    const articleThumbMediaId = document.getElementById('articleThumbMediaId').value;
+    const articleDigest = document.getElementById('articleDigest').value;
+    const articleShowCoverPic = document.getElementById('articleShowCoverPic').checked ? 1 : 0;
+
+    const publishMessage = document.getElementById('publishMessage');
+    publishMessage.textContent = 'Publishing article...';
+
+    try {
+        // First, convert markdown content to HTML (using the existing /convert endpoint)
+        const convertResponse = await fetch('/convert', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content: articleContent }),
+        });
+        const convertData = await convertResponse.json();
+
+        if (!convertResponse.ok) {
+            publishMessage.textContent = `Error converting markdown: ${convertData.error}`;
+            return;
+        }
+
+        const htmlContent = convertData.markdown;
+
+        const articles = [{
+            title: articleTitle,
+            author: articleAuthor,
+            content: htmlContent,
+            thumb_media_id: articleThumbMediaId,
+            digest: articleDigest,
+            show_cover_pic: articleShowCoverPic,
+            content_source_url: '' // Optional: URL to original article
+        }];
+
+        const response = await fetch('/wechat/publish_article', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ articles }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            publishMessage.textContent = `Article published successfully! Media ID: ${data.mediaId}`;
+        } else {
+            publishMessage.textContent = `Error: ${data.error}`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        publishMessage.textContent = 'An error occurred during article publishing.';
+    }
+});
+
+        </script>
+
+
     <script src="app.js"></script>
+    <form id="imageUploadForm" class="upload-form">
+        <h2>Upload Image to Wechat</h2>
+        <input type="file" id="wechatImage" accept="image/*" required>
+        <button type="submit">Upload Image</button>
+        <p id="imageMessage" class="message"></p>
+        <div id="imagePreview"></div>
+    </form>
+
+    <h2>Publish Article to Wechat</h2>
+    <form id="publishArticleForm" class="article-form">
+        <label for="articleTitle">Title:</label>
+        <input type="text" id="articleTitle" required>
+        <label for="articleAuthor">Author:</label>
+        <input type="text" id="articleAuthor" required>
+        <label for="articleContent">Content (Markdown):</label>
+        <textarea id="articleContent" rows="10" required></textarea>
+        <label for="articleThumbMediaId">Thumbnail Media ID:</label>
+        <input type="text" id="articleThumbMediaId" required>
+        <label for="articleDigest">Digest:</label>
+        <textarea id="articleDigest" rows="3"></textarea>
+        <label for="articleShowCoverPic">Show Cover Pic:</label>
+        <input type="checkbox" id="articleShowCoverPic">
+        <button type="submit">Publish Article</button>
+        <p id="publishMessage" class="message"></p>
+    </form>
+    <form id="imageUploadForm" class="upload-form">
+        <h2>Upload Image to Wechat</h2>
+        <input type="file" id="wechatImage" accept="image/*" required>
+        <button type="submit">Upload Image</button>
+        <p id="imageMessage" class="message"></p>
+        <div id="imagePreview"></div>
+    </form>
+
+    <h2>Publish Article to Wechat</h2>
+    <form id="publishArticleForm" class="article-form">
+        <label for="articleTitle">Title:</label>
+        <input type="text" id="articleTitle" required>
+        <label for="articleAuthor">Author:</label>
+        <input type="text" id="articleAuthor" required>
+        <label for="articleContent">Content (Markdown):</label>
+        <textarea id="articleContent" rows="10" required></textarea>
+        <label for="articleThumbMediaId">Thumbnail Media ID:</label>
+        <input type="text" id="articleThumbMediaId" required>
+        <label for="articleDigest">Digest:</label>
+        <textarea id="articleDigest" rows="3"></textarea>
+        <label for="articleShowCoverPic">Show Cover Pic:</label>
+        <input type="checkbox" id="articleShowCoverPic">
+        <button type="submit">Publish Article</button>
+        <p id="publishMessage" class="message"></p>
+    </form>
 </body>
 </html>
