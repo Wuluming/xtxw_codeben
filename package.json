@@ -1,0 +1,25 @@
+{
+  "name": "markdown-ai-converter",
+  "version": "1.0.0",
+  "description": "A web application to convert text and URLs to structured Markdown using AI.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
+    "@google/generative-ai": "^0.14.1",
+    "cors": "^2.8.5",
+    "markdown-it": "^14.1.0",
+    "markdown-it-highlightjs": "^4.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
