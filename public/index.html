@@ -7,6 +7,15 @@
         <div id="imagePreview"></div>
     </form>
 
+    <h2>Generate Wechat Cover</h2>
+    <form id="generateCoverForm" class="cover-form">
+        <label for="coverTitle">Cover Title:</label>
+        <input type="text" id="coverTitle" required>
+        <button type="submit">Generate Cover</button>
+        <p id="coverMessage" class="message"></p>
+        <div id="coverPreview"></div>
+    </form>
+
     <h2>Publish Article to Wechat</h2>
     <form id="publishArticleForm" class="article-form">
         <label for="articleTitle">Title:</label>
@@ -151,6 +160,36 @@ document.getElementById('imageUploadForm').addEventListener('submit', async (e) 
     } catch (error) {
         console.error('Error:', error);
         imageMessage.textContent = 'An error occurred during image upload.';
+    }
+});
+
+// Generate Wechat Cover
+document.getElementById('generateCoverForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const coverTitle = document.getElementById('coverTitle').value;
+
+    const coverMessage = document.getElementById('coverMessage');
+    const coverPreview = document.getElementById('coverPreview');
+    coverMessage.textContent = 'Generating cover...';
+
+    try {
+        const response = await fetch('/wechat/generate_cover', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title: coverTitle }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            coverMessage.textContent = `Cover generated successfully! URL: ${data.coverUrl}`;
+            coverPreview.innerHTML = `<img src="${data.coverUrl}" width="200">`;
+        } else {
+            coverMessage.textContent = `Error: ${data.error}`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        coverMessage.textContent = 'An error occurred during cover generation.';
     }
 });
 

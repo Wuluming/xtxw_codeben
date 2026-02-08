@@ -48,6 +48,21 @@ app.post('/wechat/upload_image', upload.single('image'), async (req, res) => {
     }
 });
 
+app.post('/wechat/generate_cover', async (req, res) => {
+    try {
+        const { title } = req.body;
+        if (!title) {
+            return res.status(400).json({ error: 'Title is required.' });
+        }
+        const outputPath = `./uploads/cover_${Date.now()}.png`;
+        await wechat.generateCover(title, outputPath);
+        res.json({ coverUrl: `/uploads/${outputPath.split('/').pop()}` });
+    } catch (error) {
+        console.error('Error generating cover:', error);
+        res.status(500).json({ error: 'Failed to generate cover.' });
+    }
+});
+
 app.post('/wechat/publish_article', async (req, res) => {
     try {
         const { articles } = req.body;
